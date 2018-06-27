@@ -32,13 +32,12 @@ export default (state: State = init, action: Action): State => {
       return { ...state, usersOnline: action.payload.users }
     case "GET_MESSAGE":
       const { message } = action.payload
-      const entry = state.myChats[message.chat_id]
-      const newEntry = { ...entry, message }
-      const myChats = { ...state.myChats, [entry.chatID]: newEntry }
-      return {
-        ...state,
-        myChats
-      }
+      // should normilise myChats
+      const myChats = state.myChats.map(
+        entry =>
+          entry.chatID === message.chat_id ? { ...entry, message } : entry
+      )
+      return { ...state, myChats }
     default:
       return state
   }
