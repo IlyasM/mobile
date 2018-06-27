@@ -22,7 +22,7 @@ export default {
     action$.pipe(
       ofType("CONNECT"),
       withLatestFrom(state$),
-      mergeMap(([action, { auth: { user: { id } } }]) =>
+      mergeMap(([action, { auth: { token, user: { id } } }]) =>
         Obs.create(observer => {
           const socket = new Socket(`${wsURL}/socket`, action.params)
           socket.connect()

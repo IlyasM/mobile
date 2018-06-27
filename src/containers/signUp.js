@@ -15,6 +15,8 @@ import { authActions } from "../actions/authActions"
 const WIDTH = Dimensions.get("window").width
 type Props = {
   navigation: Object,
+  signedUp: boolean,
+  error: ?{ email: Array<string> },
   signUp: (name: string, email: string, password: string) => Action
 }
 type State = {
@@ -81,6 +83,10 @@ class SignUp extends Component<Props, State> {
     )
   }
 }
+export default connect(
+  ({ auth: { error, signedUp } }) => ({ error, signedUp }),
+  { signUp: authActions.signUp }
+)(SignUp)
 
 const styles = StyleSheet.create({
   root: {
@@ -118,8 +124,3 @@ const styles = StyleSheet.create({
     color: "green"
   }
 })
-
-export default connect(
-  state => ({ error: state.auth.error, signedUp: state.auth.signedUp }),
-  { signUp: authActions.signUp }
-)(SignUp)

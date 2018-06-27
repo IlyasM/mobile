@@ -23,14 +23,8 @@ export default {
       mergeMap(action =>
         ajax.post(baseURL + "sign_up", { user: action.params }, headers).pipe(
           map(_resp => ({ type: "SIGN_UP_OK", payload: "registered" })),
-          catchError(
-            ({
-              xhr: {
-                response: { errors }
-              }
-            }) =>
-              console.log(errors) ||
-              of({ type: "SIGN_UP_ERROR", error: errors })
+          catchError(({ xhr: { response: { errors } } }) =>
+            of({ type: "SIGN_UP_ERROR", error: errors })
           )
         )
       )

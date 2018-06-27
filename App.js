@@ -21,7 +21,7 @@ let { store, persistor } = configureStore()
 type Props = {}
 export default class App extends Component<Props> {
   componentDidMount() {
-    persistor.purge()
+    //  persistor.purge()
   }
   render() {
     return (

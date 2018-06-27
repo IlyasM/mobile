@@ -5,7 +5,7 @@ import type { User } from "../dataTypes"
 type State = {
   user: ?User,
   token: ?string,
-  error: ?(string | Object),
+  error: ?(string | { email: Array<string> }),
   signedUp: boolean
 }
 const init: State = {
@@ -17,9 +17,6 @@ const init: State = {
 
 export default (state: State = init, action: Action): State => {
   switch (action.type) {
-    case "LOGIN":
-    case "SIGN_UP":
-      return { ...state }
     case "SIGN_UP_OK":
       return { ...init, signedUp: true }
     case "LOGIN_OK":

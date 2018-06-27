@@ -12,7 +12,7 @@ export type Action =
     }
   | {
       type: "SIGN_UP_ERROR",
-      error: Array<Object>
+      error: { email: Array<string> }
     }
   | { type: "LOGIN", params: { email: string, password: string } }
   | {
