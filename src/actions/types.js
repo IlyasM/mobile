@@ -39,5 +39,5 @@ export type Action =
       params: { chat_id: number, last_seen_id: number }
     }
   | { type: "JOIN_CONVERSATION_OK", payload: { messages: Array<Message> } }
-  | { type: "PUSH_EVENT", params: { event: Event } }
+  | { type: "GET_MESSAGE", payload: { message: Message } }
   | { type: "OBSERVE_EVENT", payload: { event: Event } }

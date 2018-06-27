@@ -3,7 +3,7 @@ import type { Action } from "../actions/types"
 import type { User, Message, Entry } from "../dataTypes"
 
 type State = {
-  myChats: { [key: number]: Entry },
+  myChats: Array<Entry>,
   users: Array<User>,
   socket: ?Object,
   channel: ?Object,
@@ -32,7 +32,7 @@ export default (state: State = init, action: Action): State => {
       return { ...state, usersOnline: action.payload.users }
     case "GET_MESSAGE":
       const { message } = action.payload
-      // should normilise myChats
+      // should normalise myChats
       const myChats = state.myChats.map(
         entry =>
           entry.chatID === message.chat_id ? { ...entry, message } : entry

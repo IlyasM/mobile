@@ -5,23 +5,29 @@ import type { User } from "../dataTypes"
 type State = {
   user: ?User,
   token: ?string,
-  error: any,
-  loading: boolean
+  error: ?(string | Object),
+  signedUp: boolean
 }
-const init: State = { user: null, token: null, error: null, loading: false }
+const init: State = {
+  user: null,
+  token: null,
+  error: null,
+  signedUp: false
+}
 
 export default (state: State = init, action: Action): State => {
   switch (action.type) {
     case "LOGIN":
     case "SIGN_UP":
-      return { ...state, loading: true }
+      return { ...state }
+    case "SIGN_UP_OK":
+      return { ...init, signedUp: true }
     case "LOGIN_OK":
       const { user, token } = action.payload
-      return { ...state, user, token, loading: false }
+      return { ...init, user, token }
     case "LOGIN_ERROR":
     case "SIGN_UP_ERROR":
-      const error = action.error
-      return { ...state, error, loading: false }
+      return { ...state, error: action.error }
     case "LOGOUT":
       return init
     default:

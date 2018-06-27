@@ -1,10 +1,10 @@
 //@flow
-import React from "react";
-import { createStackNavigator } from "react-navigation";
-import SignUpScreen from "../containers/signUp";
-import LoginScreen from "../containers/login";
+import React from "react"
+import { createStackNavigator } from "react-navigation"
+import SignUpScreen from "../containers/signUp"
+import LoginScreen from "../containers/login"
 
 export default createStackNavigator({
-   SignUp: SignUpScreen,
-   LogIn: LoginScreen
-});
+  SignUp: SignUpScreen,
+  Login: LoginScreen
+})

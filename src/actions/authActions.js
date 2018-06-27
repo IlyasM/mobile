@@ -23,7 +23,15 @@ export default {
       mergeMap(action =>
         ajax.post(baseURL + "sign_up", { user: action.params }, headers).pipe(
           map(_resp => ({ type: "SIGN_UP_OK", payload: "registered" })),
-          catchError(errors => of({ type: "SIGN_UP_ERROR", errors }))
+          catchError(
+            ({
+              xhr: {
+                response: { errors }
+              }
+            }) =>
+              console.log(errors) ||
+              of({ type: "SIGN_UP_ERROR", error: errors })
+          )
         )
       )
     ),
@@ -34,11 +42,13 @@ export default {
         ajax
           .post(baseURL + "sign_in", { session: action.params }, headers)
           .pipe(
-            map(resp => ({
+            map(({ response: { user, jwt } }) => ({
               type: "LOGIN_OK",
-              payload: { user: resp.user, token: resp.jwt }
+              payload: { user, token: jwt }
             })),
-            catchError(error => of({ type: "LOGIN_ERROR", error }))
+            catchError(({ xhr: { response: { error } } }) =>
+              of({ type: "LOGIN_ERROR", error })
+            )
           )
       )
     )
