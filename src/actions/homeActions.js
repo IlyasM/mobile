@@ -15,6 +15,10 @@ export const homeActions: { [key: string]: (...args: any) => Action } = {
   newChat: (user_id: number) => ({
     type: "NEW_CHAT",
     params: { user_id }
+  }),
+  joinMain: (user_id: number, socket: Object) => ({
+    type: "JOIN_MAIN",
+    params: { user_id, socket }
   })
 }
 export default {
@@ -30,10 +34,6 @@ export default {
             observer.next({ type: "CONNECT_ERROR", error: "unauthorized" })
           )
           observer.next({ type: "CONNECT_OK", payload: { socket } })
-          observer.next({
-            type: "JOIN_MAIN",
-            params: { user_id: id, socket }
-          })
         })
       )
     ),
@@ -63,13 +63,6 @@ export default {
             observer.next({ type: "GET_MESSAGE", payload: { message } })
             //need to notify other of receiving their message
             channel.push("received", { message })
-          })
-          //all these bellow are handled in chat reducer
-          channel.on("received", ({ message }) => {
-            observer.next({ type: "MARK_RECEIVED", payload: { message } })
-          })
-          channel.on("seen", ({ message }) => {
-            observer.next({ type: "MARK_SEEN", payload: { message } })
           })
           channel.on("typing", ({ chat_id }) => {
             observer.next({ type: "TYPING", payload: { chat_id } })
