@@ -1,5 +1,5 @@
 //@flow
-import type { Message, Event, User, Entry } from "../dataTypes"
+import type { Message, Event, User } from "../dataTypes"
 
 export type Action =
   | {
@@ -21,23 +21,32 @@ export type Action =
     }
   | { type: "LOGIN_ERROR", error: string }
   | { type: "LOGOUT" }
-  | { type: "CONNECT", params: { token: string } }
+  | { type: "CONNECT" }
   | { type: "CONNECT_OK", payload: { socket: Object } }
   | { type: "CONNECT_ERROR", error: string }
   | { type: "JOIN_MAIN", params: { user_id: number, socket: Object } }
-  | { type: "JOIN_MAIN_OK", payload: { channel: Object, users: Array<User> } }
+  | {
+      type: "JOIN_MAIN_OK",
+      payload: { channel: Object, users: { [userID: number]: User } }
+    }
   | { type: "JOIN_MAIN_ERROR", error: string }
   | { type: "PRESENCE_STATE", payload: { users: Array<User> } }
   | {
       type: "MY_CHATS",
-      payload: { list: Array<Entry> }
+      payload: {
+        list: Array<{ u_id: number, chat_id: number, message: Message }>
+      }
     }
   | { type: "NEW_CHAT", params: { user_id: number } }
-  | { type: "NEW_CHAT_OK", payload: { entry: Entry } }
+  | { type: "NEW_CHAT_OK", payload: { u_id: number, chat_id: number } }
   | {
       type: "JOIN_CONVERSATION",
       params: { chat_id: number, last_seen_id: number }
     }
-  | { type: "JOIN_CONVERSATION_OK", payload: { messages: Array<Message> } }
+  | {
+      type: "JOIN_CONVERSATION_OK",
+      payload: { messages: Array<Message>, channel: Object }
+    }
   | { type: "GET_MESSAGE", payload: { message: Message } }
-  | { type: "OBSERVE_EVENT", payload: { event: Event } }
+  | { type: "MARK_RECEIVED", payload: { message: Message } }
+  | { type: "MARK_SEEN", payload: { message: Message } }

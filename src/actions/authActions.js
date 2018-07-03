@@ -5,11 +5,10 @@ import type { Observable } from "rxjs"
 import { ofType } from "redux-observable"
 import type { Action } from "./types"
 import { baseURL, headers } from "../constants/networking"
-
 export const authActions: { [key: string]: (...args: any) => Action } = {
-  signUp: (name: string, email: string, password: string) => ({
+  signUp: (name: string, email: string, password: string, image: string) => ({
     type: "SIGN_UP",
-    params: { name, email, password }
+    params: { name, email, password, image }
   }),
   login: (email: string, password: string) => ({
     type: "LOGIN",

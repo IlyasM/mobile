@@ -5,12 +5,13 @@
  */
 
 import React, { Component } from "react"
-import { Platform, StyleSheet, Text, View } from "react-native"
+import { Platform, StyleSheet, Text, View, YellowBox } from "react-native"
 import { Provider } from "react-redux"
 import configureStore from "./src/store"
 import { PersistGate } from "redux-persist/integration/react"
 import SwitchNavigator from "./src/navigation/appNavigator"
 import Loading from "./src/components/loading"
+YellowBox.ignoreWarnings(["Warning: isMounted(...)", "Module RCTImageLoader"])
 const instructions = Platform.select({
   ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
   android:

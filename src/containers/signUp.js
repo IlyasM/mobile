@@ -12,6 +12,7 @@ import {
 import type { Action } from "../actions/types"
 import { connect } from "react-redux"
 import { authActions } from "../actions/authActions"
+import Faker from "faker"
 const WIDTH = Dimensions.get("window").width
 type Props = {
   navigation: Object,
@@ -26,16 +27,22 @@ type State = {
 }
 class SignUp extends Component<Props, State> {
   static navigationOptions = { title: "Sign Up" }
+  state = {
+    name: "",
+    email: "",
+    password: ""
+  }
 
   goToLogin = () => {
     this.props.navigation.navigate("Login")
   }
   signUp = () => {
     const { name, email, password } = this.state
-    this.props.signUp(name, email.toLowerCase(), password)
+    this.props.signUp(name, email.toLowerCase(), password, Faker.image.avatar())
   }
 
   render() {
+    const { error } = this.props
     return (
       <View style={styles.root}>
         <TextInput
@@ -73,8 +80,8 @@ class SignUp extends Component<Props, State> {
             You successfully created an account!
           </Text>
         )}
-        {this.props.error &&
-          this.props.error.email.map(err => (
+        {error &&
+          error.email.map(err => (
             <Text style={styles.error} key={err}>
               Email {err}
             </Text>
@@ -84,7 +91,7 @@ class SignUp extends Component<Props, State> {
   }
 }
 export default connect(
-  ({ auth: { error, signedUp } }) => ({ error, signedUp }),
+  ({ auth: { signUpError, signedUp } }) => ({ error: signUpError, signedUp }),
   { signUp: authActions.signUp }
 )(SignUp)
 

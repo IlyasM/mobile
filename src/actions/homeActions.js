@@ -1,6 +1,13 @@
 //@flow
-import { mergeMap, catchError, map, withLatestFrom } from "rxjs/operators"
-import { Observable as Obs } from "rxjs"
+import {
+  switchMap,
+  mergeMap,
+  catchError,
+  map,
+  withLatestFrom,
+  debounceTime
+} from "rxjs/operators"
+import { Observable as Obs, of } from "rxjs"
 import { ofType } from "redux-observable"
 import type { Action } from "./types"
 import { Socket } from "phoenix"
@@ -9,8 +16,7 @@ import type { Observable } from "rxjs"
 import type { Event } from "../dataTypes"
 export const homeActions: { [key: string]: (...args: any) => Action } = {
   connect: (token: string) => ({
-    type: "CONNECT",
-    params: { token }
+    type: "CONNECT"
   }),
   newChat: (user_id: number) => ({
     type: "NEW_CHAT",
@@ -26,16 +32,43 @@ export default {
     action$.pipe(
       ofType("CONNECT"),
       withLatestFrom(state$),
-      mergeMap(([action, { auth: { token, user: { id } } }]) =>
-        Obs.create(observer => {
-          const socket = new Socket(`${wsURL}/socket`, action.params)
-          socket.connect()
-          socket.onError(() =>
-            observer.next({ type: "CONNECT_ERROR", error: "unauthorized" })
-          )
-          observer.next({ type: "CONNECT_OK", payload: { socket } })
-        })
+      mergeMap(
+        ([
+          action,
+          {
+            auth: {
+              token,
+              user: { id }
+            },
+            socket: { socket }
+          }
+        ]) =>
+          Obs.create(observer => {
+            let sock
+            if (!socket) {
+              sock = new Socket(`${wsURL}/socket`, {
+                params: { token }
+              })
+              sock.connect()
+              sock.onError(e =>
+                observer.next({ type: "CONNECT_ERROR", error: "unauthorized" })
+              )
+              observer.next({ type: "CONNECT_OK", payload: { socket: sock } })
+            }
+            observer.next(homeActions.joinMain(id, socket ? socket : sock))
+          })
       )
+    ),
+  typingIncoming: (action$: Observable<Action>) =>
+    action$.pipe(
+      ofType("TYPING_INCOMING"),
+      debounceTime(800),
+      switchMap(action => {
+        return of({
+          type: "TYPING_INCOMING_STOP",
+          payload: { chatID: action.payload.chatID }
+        })
+      })
     ),
   joinMain: (action$: Observable<Action>) =>
     action$.pipe(
@@ -54,21 +87,29 @@ export default {
             .receive("error", error =>
               observer.next({ type: "JOIN_MAIN_ERROR", error })
             )
-          channel.on("my_chats", chats => console.log(chats)) //setup my chats here
-          channel.on("presence_state", payload =>
-            console.log("presense state", payload)
-          ) //setup online presences here
-          channel.on("new:msg", ({ message }) => {
-            //i am receiving a message
-            observer.next({ type: "GET_MESSAGE", payload: { message } })
-            //need to notify other of receiving their message
-            channel.push("received", { message })
+          channel.on("my_chats", payload =>
+            observer.next({
+              type: "MY_CHATS",
+              payload: { list: payload.state }
+            })
+          )
+          channel.on("new:msg", message => {
+            if (message.author_id !== user_id) {
+              observer.next({ type: "GET_MESSAGE", payload: { message } })
+              channel.push("received", { message })
+            }
           })
-          channel.on("typing", ({ chat_id }) => {
-            observer.next({ type: "TYPING", payload: { chat_id } })
+
+          channel.on("typing", payload => {
+            //if it is not me who is typing
+            if (!(user_id === payload.user_id)) {
+              observer.next({
+                type: "TYPING_INCOMING",
+                payload: { chatID: payload.chat_id }
+              })
+            }
           })
         })
       )
-    ),
-  newChat: (action$: Observable<Action>) => action$.pipe()
+    )
 }

@@ -60,6 +60,14 @@ class Login extends Component<Props, State> {
     )
   }
 }
+const mapStateToProps = ({ auth }) => ({
+  token: auth.token,
+  error: auth.loginError
+})
+export default connect(
+  mapStateToProps,
+  { login: authActions.login }
+)(Login)
 
 const styles = StyleSheet.create({
   root: {
@@ -93,11 +101,3 @@ const styles = StyleSheet.create({
     color: "red"
   }
 })
-const mapStateToProps = state => ({
-  token: state.auth.token,
-  error: state.auth.error
-})
-export default connect(
-  mapStateToProps,
-  { login: authActions.login }
-)(Login)

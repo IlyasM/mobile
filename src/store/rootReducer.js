@@ -1,4 +1,4 @@
 //@flow
 import { combineReducers } from "redux"
-import reducer from "../reducers"
-export default combineReducers(reducer)
+import reducers from "../reducers"
+export default combineReducers(reducers)

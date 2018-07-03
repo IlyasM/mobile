@@ -5,13 +5,15 @@ import type { User } from "../dataTypes"
 type State = {
   user: ?User,
   token: ?string,
-  error: ?(string | { email: Array<string> }),
+  signUpError: ?{ email: Array<string> },
+  loginError: ?string,
   signedUp: boolean
 }
 const init: State = {
   user: null,
   token: null,
-  error: null,
+  loginError: null,
+  signUpError: null,
   signedUp: false
 }
 
@@ -23,8 +25,9 @@ export default (state: State = init, action: Action): State => {
       const { user, token } = action.payload
       return { ...init, user, token }
     case "LOGIN_ERROR":
+      return { ...state, loginError: action.error }
     case "SIGN_UP_ERROR":
-      return { ...state, error: action.error }
+      return { ...init, signUpError: action.error }
     case "LOGOUT":
       return init
     default:
