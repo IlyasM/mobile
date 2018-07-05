@@ -1,14 +1,19 @@
 //@flow
 import React, { Component } from "react"
 import { Text, StyleSheet, View, Dimensions } from "react-native"
-
+import Ioincons from "react-native-vector-icons/Ionicons"
 let green = "#dcf8c6"
 let grey = "rgb(220,220,220)"
 const WIDTH = Dimensions.get("window").width
 export default ({ item, next, me }) => {
   const isMe = item.author_id === me.id
   const marginTop = next && item.author_id === next.author_id ? 0 : 16
-
+  let color
+  if (item.status === "saved" || item.status === "received") {
+    color = "rgb(150,150,150)"
+  } else {
+    color = "blue"
+  }
   return (
     <View
       style={[styles.root, { alignItems: isMe ? "flex-end" : "flex-start" }]}
@@ -23,7 +28,19 @@ export default ({ item, next, me }) => {
           }
         ]}
       >
-        <Text style={styles.text}>{item.text}</Text>
+        <View>
+          <Text style={styles.text}>{item.text}</Text>
+          {isMe && (
+            <View style={styles.status}>
+              <View style={styles.marks}>
+                <Ioincons color={color} size={20} name="ios-checkmark" />
+                {item.status !== "saved" && (
+                  <Ioincons color={color} size={20} name="ios-checkmark" />
+                )}
+              </View>
+            </View>
+          )}
+        </View>
       </View>
     </View>
   )
@@ -32,15 +49,19 @@ export default ({ item, next, me }) => {
 const styles = StyleSheet.create({
   root: {},
   container: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     padding: 12,
     marginHorizontal: 12,
     borderRadius: 5,
     maxWidth: WIDTH / 1.5
-    //  shadowColor: "rgb(20,20,20)",
-    //  shadowOffset: { height: 2, width: 1 },
-    //  shadowOpacity: 0.1,
-    //  shadowRadius: 5
+  },
+  status: {
+    position: "absolute",
+    bottom: -15,
+    right: -10
+  },
+  marks: {
+    flexDirection: "row"
   },
   text: {
     fontSize: 16

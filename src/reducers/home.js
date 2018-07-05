@@ -20,8 +20,6 @@ const init: State = {
   myChats: {},
   dataSource: []
 }
-const sortChatsByLastMessage = chats =>
-  values(chats).sort((a, b) => a.message.id < b.message.id)
 
 export default (state: State = init, action: Action): State => {
   let myChats, dataSource
@@ -31,11 +29,12 @@ export default (state: State = init, action: Action): State => {
       return { ...state, users }
     case "MY_CHATS":
       myChats = action.payload.list.reduce(
-        (acc, { u_id, chat_id, message }) => ({
+        (acc, { u_id, chat_id, message, unseen_count }) => ({
           ...acc,
           [chat_id]: {
             user: state.users[u_id],
             chatID: chat_id,
+            unseenCount: unseen_count,
             message,
             typing: false
           }
@@ -49,7 +48,12 @@ export default (state: State = init, action: Action): State => {
       const entry = state.myChats[message.chat_id]
       myChats = {
         ...state.myChats,
-        [entry.chatID]: { ...entry, message, typing: false }
+        [entry.chatID]: {
+          ...entry,
+          message,
+          unseenCount: entry.unseenCount + 1,
+          typing: false
+        }
       }
       dataSource = sortChatsByLastMessage(myChats)
       return { ...state, myChats, dataSource }
@@ -61,6 +65,9 @@ export default (state: State = init, action: Action): State => {
       return state
   }
 }
+
+const sortChatsByLastMessage = chats =>
+  values(chats).sort((a, b) => a.message.id < b.message.id)
 const handleTyping = (flag: boolean, chatID: string, state: State): State => {
   const dataSource = state.dataSource.map(entry => {
     if (`${entry.chatID}` === chatID) {

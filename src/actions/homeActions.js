@@ -5,7 +5,9 @@ import {
   catchError,
   map,
   withLatestFrom,
-  debounceTime
+  tap,
+  debounceTime,
+  ignoreElements
 } from "rxjs/operators"
 import { Observable as Obs, of } from "rxjs"
 import { ofType } from "redux-observable"
@@ -70,46 +72,89 @@ export default {
         })
       })
     ),
-  joinMain: (action$: Observable<Action>) =>
+  getMessage: (action$: Observable<Action>, state$: Observable<any>) =>
+    action$.pipe(
+      ofType("GET_MESSAGE"),
+      withLatestFrom(state$),
+      tap(
+        ([
+          {
+            payload: { message }
+          },
+          {
+            socket: { currentChannel },
+            auth: { user }
+          }
+        ]) => {
+          if (message.author_id === user.id) {
+            return
+          }
+          if (currentChannel.topic === `conversation:${message.chat_id}`) {
+            currentChannel.push("seen", { message_id: message.id })
+          } else {
+            currentChannel.push("received", { message })
+          }
+        }
+      ),
+      ignoreElements()
+    ),
+  joinMain: (action$: Observable<Action>, state$: Observable<any>) =>
     action$.pipe(
       ofType("JOIN_MAIN"),
-      mergeMap(({ params: { user_id, socket } }) =>
-        Obs.create(observer => {
-          const channel = socket.channel(`main:${user_id}`)
-          channel
-            .join()
-            .receive("ok", response => {
-              observer.next({
-                type: "JOIN_MAIN_OK",
-                payload: { channel, users: response.users }
+      withLatestFrom(state$),
+      mergeMap(
+        ([
+          {
+            params: { user_id, socket }
+          },
+          {
+            socket: { currentChannel }
+          }
+        ]) =>
+          Obs.create(observer => {
+            const channel = socket.channel(`main:${user_id}`)
+            channel
+              .join()
+              .receive("ok", response => {
+                observer.next({
+                  type: "JOIN_MAIN_OK",
+                  payload: { channel, users: response.users }
+                })
               })
-            })
-            .receive("error", error =>
-              observer.next({ type: "JOIN_MAIN_ERROR", error })
+              .receive("error", error =>
+                observer.next({ type: "JOIN_MAIN_ERROR", error })
+              )
+            channel.on("my_chats", payload =>
+              observer.next({
+                type: "MY_CHATS",
+                payload: { list: payload.state }
+              })
             )
-          channel.on("my_chats", payload =>
-            observer.next({
-              type: "MY_CHATS",
-              payload: { list: payload.state }
+            channel.on("new:msg", message => {
+              if (message.author_id !== user_id) {
+                observer.next({ type: "GET_MESSAGE", payload: { message } })
+              }
             })
-          )
-          channel.on("new:msg", message => {
-            if (message.author_id !== user_id) {
-              observer.next({ type: "GET_MESSAGE", payload: { message } })
-              channel.push("received", { message })
-            }
+            channel.on("received", message => {
+              observer.next({ type: "MARK_RECEIVED", payload: { message } })
+            })
+            channel.on("seen", message => {
+              if (message.on_enter && message.author_id !== user_id) {
+                observer.next({ type: "MARK_SEEN_ENTER", payload: { message } })
+              }
+              if (!message.on_enter && message.author_id === user_id) {
+                observer.next({ type: "MARK_SEEN", payload: { message } })
+              }
+            })
+            channel.on("typing", payload => {
+              if (user_id !== payload.user_id) {
+                observer.next({
+                  type: "TYPING_INCOMING",
+                  payload: { chatID: payload.chat_id }
+                })
+              }
+            })
           })
-
-          channel.on("typing", payload => {
-            //if it is not me who is typing
-            if (!(user_id === payload.user_id)) {
-              observer.next({
-                type: "TYPING_INCOMING",
-                payload: { chatID: payload.chat_id }
-              })
-            }
-          })
-        })
       )
     )
 }

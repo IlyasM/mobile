@@ -16,7 +16,11 @@ type Props = {
   toChat: (item: Object) => VoidFunction
 }
 const WIDTH = Dimensions.get("window").width
-export default ({ item: { user, message, typing }, toChat, me }: Props) => {
+export default ({
+  item: { user, message, typing, unseenCount },
+  toChat,
+  me
+}: Props) => {
   return (
     <TouchableOpacity onPress={toChat}>
       <View style={styles.container}>
@@ -27,10 +31,10 @@ export default ({ item: { user, message, typing }, toChat, me }: Props) => {
             <Text style={styles.lastMessage}>
               {typing ? "typing..." : message.text}
             </Text>
-            {me.id !== message.author_id &&
-              message.status !== "seen" && (
+            {message.author_id !== me.id &&
+              unseenCount > 0 && (
                 <View style={styles.circle}>
-                  <Text style={styles.count}>1</Text>
+                  <Text style={styles.count}>{unseenCount}</Text>
                 </View>
               )}
           </View>

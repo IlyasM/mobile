@@ -39,14 +39,15 @@ class Chat extends Component {
   }
 
   render() {
-    console.log("rendering chats", this.props)
-    const { pushTyping, newMessage, pushStatus, me } = this.props
+    const { pushTyping, newMessage, me } = this.props
     const item = this.props.navigation.getParam("item")
     const { chatID, message } = item
     if (!this.props.chats[chatID]) {
       return <Loading />
     }
-    const messages = this.props.chats[chatID].messages || []
+    const chat = this.props.chats[chatID]
+    const messages = chat.messages || []
+    const typing = chat.typing
     return (
       <KeyboardAvoidingView
         keyboardVerticalOffset={64}
@@ -60,7 +61,7 @@ class Chat extends Component {
           keyExtractor={i => `${i.id}`}
           scrollsToTop={false}
         />
-        {this.props.typing && <Text style={styles.typing}>typing...</Text>}
+        {typing && <Text style={styles.typing}>typing...</Text>}
 
         <MessageInput
           chatID={chatID}

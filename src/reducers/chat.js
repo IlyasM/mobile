@@ -4,22 +4,24 @@ import type { User, Message } from "../dataTypes"
 import values from "lodash/values"
 type State = {
   chats: {
-    [chatID: number]: { messages: Array<Message>, last_seen_id: number }
-  },
-  typing: boolean
+    [chatID: number]: {
+      messages: Array<Message>,
+      last_seen_id: number,
+      typing: boolean
+    }
+  }
 }
 const init: State = {
-  chats: {},
-  typing: false
+  chats: {}
 }
 
 export default (state: State = init, action: Action): State => {
-  let entry
+  let entry, chatID, messages, message
   switch (action.type) {
     case "JOIN_CONVERSATION_OK":
-      const { chatID, messages } = action.payload
-      let new_State,
-        chat = state.chats[chatID],
+      chatID = action.payload.chatID
+      messages = action.payload.messages
+      let chat = state.chats[chatID],
         last_seen_id = chat ? chat.last_seen_id : 0
       if (chat && messages.length < 1) {
         return state
@@ -29,33 +31,39 @@ export default (state: State = init, action: Action): State => {
       }
 
       if (!chat) {
-        new_state = {
+        return {
           ...state,
           chats: {
             ...state.chats,
-            [chatID]: { messages: messages.reverse(), last_seen_id }
+            [chatID]: {
+              messages: messages.reverse(),
+              last_seen_id,
+              typing: false
+            }
           }
         }
       } else {
-        new_state = {
+        return {
           ...state,
           chats: {
             ...state.chats,
             [chatID]: {
               messages: [...messages.reverse(), ...chat.messages],
-              last_seen_id
+              last_seen_id,
+              typing: false
             }
           }
         }
       }
-      return new_state
 
     case "GET_MESSAGE":
-      const { message } = action.payload
+      message = action.payload.message
       entry = state.chats[message.chat_id]
+      if (!entry) return state
       return {
         ...state,
         chats: {
+          ...state.chats,
           [message.chat_id]: {
             ...entry,
             messages: [message, ...entry.messages],
@@ -64,13 +72,52 @@ export default (state: State = init, action: Action): State => {
         }
       }
     case "MARK_RECEIVED":
-      return state
+      return handleStatusUpdate(action.payload.message, state)
+    case "MARK_SEEN":
+      return handleStatusUpdate(action.payload.message, state)
+    case "MARK_SEEN_ENTER":
+      message = action.payload.message
+      entry = state.chats[message.chat_id]
+      if (!entry) {
+        return state
+      }
+      return {
+        ...state,
+        chats: {
+          ...state.chats,
+          [message.chat_id]: {
+            ...entry,
+            messages: entry.messages.map(m => ({ ...m, status: "seen" }))
+          }
+        }
+      }
+      return
     case "TYPING_INCOMING":
-      return { ...state, typing: true }
+      return handleTyping(true, action.payload.chatID, state)
     case "TYPING_INCOMING_STOP":
-      return { ...state, typing: false }
-
+      return handleTyping(false, action.payload.chatID, state)
     default:
       return state
+  }
+}
+const handleStatusUpdate = (message: Message, state: State): State => {
+  const entry = state.chats[message.chat_id]
+  return {
+    ...state,
+    chats: {
+      ...state.chats,
+      [message.chat_id]: {
+        ...entry,
+        messages: entry.messages.map(m => (m.id === message.id ? message : m))
+      }
+    }
+  }
+}
+const handleTyping = (flag: boolean, chatID: number, state: State): State => {
+  const chat = state.chats[chatID]
+  if (!chat) return state
+  return {
+    ...state,
+    chats: { ...state.chats, [chatID]: { ...chat, typing: flag } }
   }
 }

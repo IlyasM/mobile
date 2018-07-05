@@ -6,6 +6,7 @@ import {
   withLatestFrom,
   ignoreElements,
   tap,
+  takeUntil,
   debounceTime
 } from "rxjs/operators"
 import { Observable as Obs } from "rxjs"
@@ -71,18 +72,6 @@ export default {
               .receive("error", error =>
                 observer.next({ type: "JOIN_CONVERSATION_ERROR", error })
               )
-
-            channel.on("received", ({ message }) => {
-              if (message.author_id === user.id) {
-                observer.next({ type: "MARK_RECEIVED", payload: { message } })
-              }
-            })
-            // channel.on("seen", message => {
-            //   observer.next({ type: "MARK_SEEN", payload: { message } })
-            // })
-            // channel.on("typing", ({ chat_id }) => {
-            //   observer.next({ type: "TYPING", payload: { chat_id } })
-            // })
           })
       )
     ),

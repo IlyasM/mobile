@@ -14,11 +14,13 @@ import type { Action } from "../actions/types"
 import HomeItem from "../components/homeItem"
 import Loading from "../components/loading"
 const WIDTH = Dimensions.get("window").width
+
 type Props = {
   connect: () => Action,
   dataSource: Array<Object>,
   users: Object
 }
+
 class Home extends Component<Props> {
   static navigationOptions = {
     title: "Home"
@@ -65,9 +67,10 @@ class Home extends Component<Props> {
 }
 
 export default connect(
-  ({ home: { dataSource }, auth: { user } }) => ({
+  ({ home: { dataSource }, chat: { chats }, auth: { user } }) => ({
     dataSource,
-    me: user
+    me: user,
+    chats
   }),
   { connect: actions.connect }
 )(Home)
