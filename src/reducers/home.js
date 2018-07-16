@@ -68,10 +68,10 @@ export default (state: State = init, action: Action): State => {
 
 const sortChatsByLastMessage = chats =>
   values(chats).sort((a, b) => a.message.id < b.message.id)
-const handleTyping = (flag: boolean, chatID: string, state: State): State => {
+const handleTyping = (typing: boolean, chatID: string, state: State): State => {
   const dataSource = state.dataSource.map(entry => {
     if (`${entry.chatID}` === chatID) {
-      return { ...entry, typing: flag }
+      return { ...entry, typing }
     }
     return entry
   })

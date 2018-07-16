@@ -11,7 +11,6 @@ export default class FadeImage extends Component {
   state = {
     opacity: new Animated.Value(0)
   }
-  static hasBeenLoaded = false
 
   _onLoad = () => {
     Animated.timing(this.state.opacity, {
@@ -22,7 +21,6 @@ export default class FadeImage extends Component {
   }
 
   render() {
-    const { firstLetter } = this.props
     return (
       <View>
         <Animated.Image
@@ -54,9 +52,7 @@ export default class FadeImage extends Component {
             },
             this.props.style
           ]}
-        >
-          <Text style={styles.text}>{firstLetter}</Text>
-        </Animated.View>
+        />
       </View>
     )
   }
@@ -67,9 +63,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     justifyContent: "center",
     alignItems: "center"
-  },
-  text: {
-    fontSize: 25,
-    color: "rgb(50,50,50)"
   }
 })

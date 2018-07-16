@@ -15,6 +15,7 @@ import { Socket } from "phoenix"
 import type { Observable } from "rxjs"
 import type { Action } from "./types"
 import type { Message } from "../dataTypes"
+
 export const chatActions: { [key: string]: (...args: any) => Action } = {
   joinConversation: (chat_id: number, last_seen_id: number) => ({
     type: "JOIN_CONVERSATION",
@@ -29,10 +30,6 @@ export const chatActions: { [key: string]: (...args: any) => Action } = {
     params: {
       chat_id
     }
-  }),
-  pushStatus: (messageId: number, channel: Object, status: string) => ({
-    type: "PUSH_STATUS",
-    params: { messageId, channel, status }
   })
 }
 
@@ -75,23 +72,6 @@ export default {
           })
       )
     ),
-  typing: (action$: Observable<Action>, state$: Observable<any>) =>
-    action$.pipe(
-      ofType("PUSH_TYPING"),
-      withLatestFrom(state$),
-      tap(
-        ([
-          {
-            params: { chat_id, channel }
-          },
-          {
-            socket: { currentChannel },
-            auth: { user }
-          }
-        ]) => currentChannel.push("typing", { chat_id, user_id: user.id })
-      ),
-      ignoreElements()
-    ),
   newMessage: (action$: Observable<Action>, state$: Observable<any>) =>
     action$.pipe(
       ofType("NEW_MESSAGE"),
@@ -117,11 +97,57 @@ export default {
           })
       )
     ),
-  pushStatus: (action$: Observable<Action>) =>
+  typing: (action$: Observable<Action>, state$: Observable<any>) =>
     action$.pipe(
-      ofType("PUSH_STATUS"),
-      tap(({ params: { messageId, channel, status } }) =>
-        channel.push(status, { message_id: messageId })
+      ofType("PUSH_TYPING"),
+      withLatestFrom(state$),
+      tap(
+        ([
+          {
+            params: { chat_id }
+          },
+          {
+            socket: { currentChannel },
+            auth: { user }
+          }
+        ]) => currentChannel.push("typing", { chat_id, user_id: user.id })
+      ),
+      ignoreElements()
+    ),
+  typingIncoming: (action$: Observable<Action>) =>
+    action$.pipe(
+      ofType("TYPING_INCOMING"),
+      debounceTime(800),
+      switchMap(action => {
+        return of({
+          type: "TYPING_INCOMING_STOP",
+          payload: { chatID: action.payload.chatID }
+        })
+      })
+    ),
+  getMessage: (action$: Observable<Action>, state$: Observable<any>) =>
+    action$.pipe(
+      ofType("GET_MESSAGE"),
+      withLatestFrom(state$),
+      tap(
+        ([
+          {
+            payload: { message }
+          },
+          {
+            socket: { currentChannel },
+            auth: { user }
+          }
+        ]) => {
+          if (message.author_id === user.id) {
+            return
+          }
+          if (currentChannel.topic === `conversation:${message.chat_id}`) {
+            currentChannel.push("seen", { message_id: message.id })
+          } else {
+            currentChannel.push("received", { message })
+          }
+        }
       ),
       ignoreElements()
     )

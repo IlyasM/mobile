@@ -23,10 +23,6 @@ export const homeActions: { [key: string]: (...args: any) => Action } = {
   newChat: (user_id: number) => ({
     type: "NEW_CHAT",
     params: { user_id }
-  }),
-  joinMain: (user_id: number, socket: Object) => ({
-    type: "JOIN_MAIN",
-    params: { user_id, socket }
   })
 }
 export default {
@@ -60,43 +56,6 @@ export default {
             observer.next(homeActions.joinMain(id, socket ? socket : sock))
           })
       )
-    ),
-  typingIncoming: (action$: Observable<Action>) =>
-    action$.pipe(
-      ofType("TYPING_INCOMING"),
-      debounceTime(800),
-      switchMap(action => {
-        return of({
-          type: "TYPING_INCOMING_STOP",
-          payload: { chatID: action.payload.chatID }
-        })
-      })
-    ),
-  getMessage: (action$: Observable<Action>, state$: Observable<any>) =>
-    action$.pipe(
-      ofType("GET_MESSAGE"),
-      withLatestFrom(state$),
-      tap(
-        ([
-          {
-            payload: { message }
-          },
-          {
-            socket: { currentChannel },
-            auth: { user }
-          }
-        ]) => {
-          if (message.author_id === user.id) {
-            return
-          }
-          if (currentChannel.topic === `conversation:${message.chat_id}`) {
-            currentChannel.push("seen", { message_id: message.id })
-          } else {
-            currentChannel.push("received", { message })
-          }
-        }
-      ),
-      ignoreElements()
     ),
   joinMain: (action$: Observable<Action>, state$: Observable<any>) =>
     action$.pipe(

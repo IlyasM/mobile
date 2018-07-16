@@ -5,7 +5,13 @@ import Ioincons from "react-native-vector-icons/Ionicons"
 let green = "#dcf8c6"
 let grey = "rgb(220,220,220)"
 const WIDTH = Dimensions.get("window").width
-export default ({ item, next, me }) => {
+import type { Message, User } from "../dataTypes"
+type Props = {
+  item: Message,
+  next: Message,
+  me: User
+}
+export default ({ item, next, me }: Props) => {
   const isMe = item.author_id === me.id
   const marginTop = next && item.author_id === next.author_id ? 0 : 16
   let color
@@ -15,9 +21,7 @@ export default ({ item, next, me }) => {
     color = "blue"
   }
   return (
-    <View
-      style={[styles.root, { alignItems: isMe ? "flex-end" : "flex-start" }]}
-    >
+    <View style={{ alignItems: isMe ? "flex-end" : "flex-start" }}>
       <View
         style={[
           styles.container,
@@ -47,7 +51,6 @@ export default ({ item, next, me }) => {
 }
 
 const styles = StyleSheet.create({
-  root: {},
   container: {
     paddingVertical: 12,
     padding: 12,

@@ -1,5 +1,5 @@
 //@flow
-import type { Message, Event, User } from "../dataTypes"
+import type { Message, User } from "../dataTypes"
 
 export type Action =
   | {
@@ -50,3 +50,5 @@ export type Action =
   | { type: "GET_MESSAGE", payload: { message: Message } }
   | { type: "MARK_RECEIVED", payload: { message: Message } }
   | { type: "MARK_SEEN", payload: { message: Message } }
+  | { type: "TYPING_INCOMING", payload: { chatID: number } }
+  | { type: "TYPING_INCOMING_STOP", payload: { chatID: number } }

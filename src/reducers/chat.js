@@ -2,6 +2,7 @@
 import type { Action } from "../actions/types"
 import type { User, Message } from "../dataTypes"
 import values from "lodash/values"
+
 type State = {
   chats: {
     [chatID: number]: {
@@ -29,29 +30,16 @@ export default (state: State = init, action: Action): State => {
       if (messages.length > 0) {
         last_seen_id = messages[messages.length - 1].id
       }
-
-      if (!chat) {
-        return {
-          ...state,
-          chats: {
-            ...state.chats,
-            [chatID]: {
-              messages: messages.reverse(),
-              last_seen_id,
-              typing: false
-            }
-          }
-        }
-      } else {
-        return {
-          ...state,
-          chats: {
-            ...state.chats,
-            [chatID]: {
-              messages: [...messages.reverse(), ...chat.messages],
-              last_seen_id,
-              typing: false
-            }
+      return {
+        ...state,
+        chats: {
+          ...state.chats,
+          [chatID]: {
+            messages: !chat
+              ? messages.reverse
+              : [...messages.reverse(), ...chat.messages],
+            last_seen_id,
+            typing: false
           }
         }
       }
@@ -72,7 +60,6 @@ export default (state: State = init, action: Action): State => {
         }
       }
     case "MARK_RECEIVED":
-      return handleStatusUpdate(action.payload.message, state)
     case "MARK_SEEN":
       return handleStatusUpdate(action.payload.message, state)
     case "MARK_SEEN_ENTER":
@@ -91,7 +78,6 @@ export default (state: State = init, action: Action): State => {
           }
         }
       }
-      return
     case "TYPING_INCOMING":
       return handleTyping(true, action.payload.chatID, state)
     case "TYPING_INCOMING_STOP":
@@ -113,11 +99,11 @@ const handleStatusUpdate = (message: Message, state: State): State => {
     }
   }
 }
-const handleTyping = (flag: boolean, chatID: number, state: State): State => {
+const handleTyping = (typing: boolean, chatID: number, state: State): State => {
   const chat = state.chats[chatID]
   if (!chat) return state
   return {
     ...state,
-    chats: { ...state.chats, [chatID]: { ...chat, typing: flag } }
+    chats: { ...state.chats, [chatID]: { ...chat, typing } }
   }
 }

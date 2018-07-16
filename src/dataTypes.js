@@ -2,7 +2,6 @@
 
 export type User = { id: number, name: string, email: string, image: string }
 
-//MESSAGING+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_MESSAGING
 export type Message = {
   id: number,
   text: string,

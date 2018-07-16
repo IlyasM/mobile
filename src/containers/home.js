@@ -50,7 +50,7 @@ class Home extends Component<Props> {
 
   render() {
     const { dataSource } = this.props
-    if (!dataSource || dataSource.length < 1) {
+    if (!dataSource) {
       return <Loading />
     }
 

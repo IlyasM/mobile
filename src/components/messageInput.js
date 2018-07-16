@@ -1,3 +1,4 @@
+//@flow
 import React, { Component } from "react"
 import {
   Text,
@@ -11,12 +12,22 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons"
 const color = "rgb(180,180,180)"
 const WIDTH = Dimensions.get("window").width
-
-export default class MessageInput extends React.Component {
+import type { User } from "../dataTypes"
+import type { Action } from "../actions/types"
+type Props = {
+  me: User,
+  chatID: number,
+  pushTyping: (chat_id: number) => Action,
+  createMessage: (text: string, author_id: number, chat_id: number) => Action
+}
+type State = {
+  text: string,
+  height: number
+}
+export default class MessageInput extends Component<Props, State> {
   state = {
     text: "",
-    height: 30,
-    showSlider: false
+    height: 30
   }
 
   _onChangeText = text => {
@@ -46,7 +57,7 @@ export default class MessageInput extends React.Component {
   }
   renderSendButton = () => {
     const color =
-      this.state.text.trim() === "" ? "rgb(150,150,150)" : "rgb(70,70,70)"
+      this.state.text.trim() === "" ? "rgb(200,200,200)" : "rgb(70,70,70)"
     return <Ionicons name={"ios-send"} size={32} color={color} />
   }
 

@@ -1,3 +1,4 @@
+//@flow
 import React, { Component } from "react"
 import {
   Text,
@@ -12,7 +13,19 @@ import MessageInput from "../components/messageInput"
 import MessageItem from "../components/messageItem"
 import { chatActions } from "../actions/chatActions"
 import Loading from "../components/loading"
-class Chat extends Component {
+import type { User, Message } from "../dataTypes"
+import type { Action } from "../actions/types"
+
+type Props = {
+  navigation: Object,
+  me: User,
+  chats: Object,
+  joinConversation: (chat_id: number, last_seen_id: number) => Action,
+  newMessage: (text: string, author_id: number, chat_id: number) => Action,
+  pushTyping: (chat_id: number) => Action
+}
+
+class Chat extends Component<Props> {
   static navigationOptions = ({ navigation }) => ({
     title: navigation.getParam("item").user.name
   })
@@ -39,14 +52,15 @@ class Chat extends Component {
   }
 
   render() {
-    const { pushTyping, newMessage, me } = this.props
     const item = this.props.navigation.getParam("item")
     const { chatID, message } = item
-    if (!this.props.chats[chatID]) {
+    const chat = this.props.chats[chatID]
+    if (!chat) {
       return <Loading />
     }
-    const chat = this.props.chats[chatID]
-    const messages = chat.messages || []
+
+    const { pushTyping, newMessage, me } = this.props
+    const messages = chat.messages
     const typing = chat.typing
     return (
       <KeyboardAvoidingView
@@ -62,7 +76,6 @@ class Chat extends Component {
           scrollsToTop={false}
         />
         {typing && <Text style={styles.typing}>typing...</Text>}
-
         <MessageInput
           chatID={chatID}
           me={me}
@@ -75,13 +88,13 @@ class Chat extends Component {
 }
 
 export default connect(
-  ({ auth: { user }, chat: { chats, typing } }) => ({
+  ({ auth: { user }, chat: { chats } }) => ({
     me: user,
-    chats,
-    typing
+    chats
   }),
   { ...chatActions }
 )(Chat)
+
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "white" },
   typing: {

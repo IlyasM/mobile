@@ -12,11 +12,13 @@ import type { Action } from "../actions/types"
 import { connect } from "react-redux"
 import { authActions } from "../actions/authActions"
 const WIDTH = Dimensions.get("window").width
+
 type Props = {
   login: (email: string, password: string) => Action,
   navigation: Object
 }
 type State = { email: string, password: string }
+
 class Login extends Component<Props, State> {
   static navigationOptions = { title: "Login" }
   login = () => {
